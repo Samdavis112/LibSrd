@@ -1,0 +1,1255 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Text;
+
+namespace LibSrd
+{
+    public class HtmlBuilder
+    {
+        /// <summary>
+        /// The default styles applied in <head> by HtmlBuilder
+        /// </summary>
+        public bool DefaultInlineStyle;
+        /// <summary>
+        /// Any custom styles you would like to appear in <head>.
+        /// </summary>
+        public string CustomInlineStyle;
+        /// <summary>
+        /// Is the page currently open for editing.
+        /// </summary>
+        public bool HtmlOpenFlag;
+        /// <summary>
+        /// Where the actual raw HTML is stored during editing
+        /// </summary>
+        private StringBuilder htm = new StringBuilder();
+        public HtmlBuilder()
+        {
+            DefaultInlineStyle = true;
+            CustomInlineStyle = null;
+            HtmlOpenFlag = false;
+        }
+
+        #region Comments/RawText/HTML
+        /// <summary>
+        /// Adds raw text. Html formatting must be manually applied.
+        /// See also InsertSnippet(...) 
+        /// </summary>
+        /// <param name="Text"></param>
+        public void AppendRawText(string Text)
+        {
+            htm.Append(Text);
+            htm.AppendLine();
+        }
+
+        /// <summary>
+        /// Inserts a raw HTML snippet. Optionally the HTML snippet may have placeholders that are replaced with values from a dictionary.
+        /// This is useful for such as complex tables that dont map well to a simple DataTable.
+        /// </summary>
+        /// <param name="snippet">A block of html code, optionally with 'placeholders' that are substituted with values from Placeholder_ValuesDict</param>
+        /// <param name="Placeholder_InsertionsDict">Dictionary of Placeholder to values. e.g. "{title}" to "Summary Table". Can be null.</param>
+        public void InsertSnippet(StringBuilder snippet, Dictionary<string, string> Placeholder_ValuesDict = null)
+        {
+            if (Placeholder_ValuesDict != null)
+            {
+                foreach (var item in Placeholder_ValuesDict.Keys)
+                {
+                    snippet.Replace(item, Placeholder_ValuesDict[item]);
+                }
+            }
+
+            htm.Append(snippet);
+            return;
+        }
+
+        /// <summary>
+        /// Inserts a raw HTML snippet. Optionally the HTML snippet may have placeholders that are replaced with values from a dictionary.
+        /// This is useful for such as complex tables that dont map well to a simple DataTable.
+        /// </summary>
+        /// <param name="snippet">A block of html code, optionally with 'placeholders' that are substituted with values from Placeholder_ValuesDict</param>
+        /// <param name="Placeholder_ValuesDict">Dictionary of Placeholder to values. e.g. "{title}" to "Summary Table". Can be null.</param>
+        public void InsertSnippet(string snippet, Dictionary<string, string> Placeholder_ValuesDict = null)
+        {
+            if (Placeholder_ValuesDict != null)
+            {
+                foreach (var item in Placeholder_ValuesDict.Keys)
+                {
+                    snippet.Replace(item, Placeholder_ValuesDict[item]);
+                }
+            }
+
+            htm.Append(snippet);
+            return;
+        }
+
+        public void Comment(string Comment)
+        {
+            htm.AppendLine("<!--" + Comment + "-->");
+        }
+        #endregion
+
+        #region Paragraphs/Breaks/Headings
+        public void Heading(string heading, int level)
+        {
+            Heading(heading, level, null);
+        }
+
+        public void Heading(string heading, int level, string label)
+        {
+            string lvl = level.ToString();
+            if (label == null || label.Length == 0)
+                htm.AppendLine("<h" + lvl + ">" + heading + "</h" + lvl + ">");
+            else
+                htm.AppendLine("<h" + lvl + "><a id=\"" + label + "\">" + heading + "</a></h" + lvl + ">");
+        }
+
+        public void Para(string text)
+        {
+            htm.AppendLine("<p>" + text + "</p>");
+        }
+
+        public void Para(StringBuilder text)
+        {
+            htm.AppendLine("<p>" + text.ToString() + "</p>");
+        }
+
+        public void Line()
+        {
+            htm.AppendLine("<hr>");
+        }
+
+        public void Break()
+        {
+            htm.AppendLine("<br>");
+        }
+
+        public void ContactInfo(IEnumerable<string> Lines)
+        {
+            /* <address>
+                    Written by W3Schools.com<br>
+                    <a href="mailto:us@example.org">Email us</a><br>
+                    Address: Box 564, Disneyland<br>
+                    Phone: +12 34 56 78
+                </address> */
+            htm.AppendLine("<address>");
+            foreach (string line in Lines)
+            {
+                htm.AppendLine(line + "<br>");
+            }
+            htm.AppendLine("</address>");
+        }
+
+        public void ContactInfo(string Author, string Email)
+        {
+            /* <address>
+                    Written by W3Schools.com<br>
+                    <a href="mailto:us@example.org">Email us</a><br>
+                    Address: Box 564, Disneyland<br>
+                    Phone: +12 34 56 78
+                </address> */
+            htm.AppendLine("<address>");
+            htm.AppendLine("Author: " + Author + "<br>");
+            htm.AppendLine("Email: " + FormatEmailLink(Email, Email) + "<br>");
+            htm.AppendLine("</address>");
+        }
+        #endregion
+
+        #region Misc
+        /// <summary>
+        /// Open the html file
+        /// </summary>
+        /// <param name="Title">Form Title</param>
+        /// <param name="StyleFilepath">path of CSS file</param>
+        /// <param name="DefaultImageRoot">base path of Default images in the document</param>
+        public void Open(string Title, string StyleFilepath = null, string DefaultImageRoot = null)
+        {
+            htm.AppendLine("<html>");
+            htm.AppendLine("<head>");
+
+            htm.AppendLine("<style>");
+            if (DefaultInlineStyle)
+            {
+                htm.AppendLine("body { font-family: Verdana, arial, Helvetica, sans-serif; font-size: 10.5pt; }");
+                htm.AppendLine("H1 { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 17pt;}");
+                htm.AppendLine("H2 { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 13pt;}");
+                htm.AppendLine("H3 { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11pt;}");
+                htm.AppendLine("H4,H5,TH,TD { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10pt;}");
+                htm.AppendLine("table { border-collapse: collapse; }");
+                htm.AppendLine("table, th { border: solid #888888 1px; padding: 6px; }");
+                htm.AppendLine("table, td { border: solid #888888 1px; padding: 4px; }");
+            }
+            if (CustomInlineStyle != null && CustomInlineStyle.Length > 0)
+            {
+                htm.AppendLine(CustomInlineStyle);
+            }
+            htm.AppendLine("</style>");
+
+            htm.AppendLine("<title>" + Title + "</title>");
+            if (StyleFilepath != null && StyleFilepath != "")
+            {
+                htm.AppendLine("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + StyleFilepath + "\" title=\"DevEng Style\" />");
+            }
+            if (DefaultImageRoot != null && DefaultImageRoot != "")
+            {
+                //<base href="http://www.w3schools.com/images/"
+                htm.AppendLine("<base href=\"" + DefaultImageRoot + "\">");
+            }
+            htm.AppendLine("</head>");
+            htm.AppendLine("<body>");
+            HtmlOpenFlag = true;
+        }
+
+        public bool CloseWriteHtml(string filepath)
+        {
+            htm.AppendLine("</body>");
+            htm.AppendLine("</html>");
+            HtmlOpenFlag = false;
+            try
+            {
+                File.WriteAllText(filepath, htm.ToString());
+                htm.Replace("</body>", "");
+                htm.Replace("</html>", "");
+            }
+            catch
+            {
+                htm.Replace("</body>", "");
+                htm.Replace("</html>", "");
+                return false;
+            }
+            return true;
+        }
+
+        public string CloseGetHtml()
+        {
+            htm.AppendLine("</body>");
+            htm.AppendLine("</html>");
+            HtmlOpenFlag = false;
+
+            string temp = htm.ToString();
+
+            htm.Replace("</body>", "");
+            htm.Replace("</html>", "");
+            return temp;
+        }
+
+        /// <summary>
+        /// Gets the contents of the StringBuilder as is.
+        /// It is normal to use CloseGetHtml() which closes the html properly first.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return htm.ToString();
+        }
+        #endregion
+
+        #region Lists
+        public void ListGeneral(ListObj listObj)
+        {
+            htm.AppendLine(listObj.GenerateHtml());
+        }
+
+        public void ListPlain(IEnumerable<string> items)
+        {
+            if (items == null) return;
+            htm.AppendLine("<para>");
+            foreach (string item in items)
+            {
+                htm.AppendLine(item + "<br/>");
+            }
+            htm.AppendLine("</para>");
+        }
+
+        public void ListBullet(IEnumerable<string> items)
+        {
+            if (items == null) return;
+            htm.AppendLine("<ul>");
+            foreach (string item in items)
+            {
+                htm.AppendLine("<li>" + item + "</li>");
+            }
+            htm.AppendLine("</ul>");
+        }
+
+        public void ListNumbered(IEnumerable<string> items)
+        {
+            if (items == null) return;
+            htm.AppendLine("<ol>");
+            foreach (string item in items)
+            {
+                htm.AppendLine("<li>" + item + "</li>");
+            }
+            htm.AppendLine("</ol>");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Items1">First level List items</param>
+        /// <param name="Items2">2nd level list item</param>
+        public void ListNumbered(string[] Items1, string[][] Items2)   // NEEDS VERIFYING
+        {
+            if (Items1 == null) return;
+            htm.AppendLine("<ol>");
+            for (int i = 0; i < Items1.Length; i++)
+            {
+                htm.AppendLine("<li>" + Items1[i] + "</li>");
+                string[] sublist = Items2[i];
+                if (sublist != null && sublist.Length != 0)
+                {
+                    htm.AppendLine("<ol>");
+                    foreach (string subitem in sublist)
+                    {
+                        htm.AppendLine("<li>" + subitem + "</li>");
+                    }
+                    htm.AppendLine("</ol>");
+                }
+            }
+            htm.AppendLine("</ol>");
+        }
+        #endregion
+
+        #region Tables
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ColHeaders"></param>
+        /// <param name="ColAlignments"></param>
+        /// <param name="TableData"></param>
+        /// <param name="BorderFlag"></param>
+        public void Table(string[] ColHeaders, string[] ColAlignments, string[,] TableData, bool BorderFlag, bool CenterFlag)
+        {
+            string[][] tab = new string[TableData.GetLength(0)][];
+            for (int i = 0; i < TableData.GetLength(0); i++)
+            {
+                tab[i] = new string[TableData.GetLength(1)];
+                for (int j = 0; j < tab[i].Length; j++)
+                {
+                    tab[i][j] = TableData[i, j];
+                }
+            }
+            Table(ColHeaders, ColAlignments, tab, null, true, BorderFlag, CenterFlag);
+        }
+
+        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag)
+        {
+            IList<IList<string>> ColorData = null;
+            Table(ColHeaders, ColAlignments, TableData, ColorData, RowsOfColumnsFlag, BorderFlag, CenterFlag);
+        }
+
+        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, IList<IList<string>> ColorData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag)
+        {
+            if (TableData == null || TableData.Count == 0) return;
+
+            if (CenterFlag) htm.Append("<center>");
+            htm.Append("<table"); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+
+            int Ncols = TableData[0].Count;   // TableData[0] is first row in RowsOfColumns mode
+            if (!RowsOfColumnsFlag) Ncols = TableData.Count;
+
+            // preprocess Column alignments to ensure legal
+            if (ColAlignments == null || ColAlignments.Count < Ncols) ColAlignments = new string[Ncols];
+            for (int j = 0; j < ColAlignments.Count; j++)
+            {
+                if (ColAlignments[j] == null || ColAlignments[j].Length == 0) ColAlignments[j] = "center";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "L") ColAlignments[j] = "left";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "R") ColAlignments[j] = "right";
+                else ColAlignments[j] = "center";
+
+                ColAlignments[j] = ColAlignments[j].ToLower().Replace("centre", "center");
+            }
+
+            if (ColHeaders != null)     // <tr> <th align="left">Extension</th>  <th align="left">Format</th> </tr>
+            {
+
+                htm.Append("<tr> ");
+                for (int j = 0; j < ColHeaders.Count; j++)
+                {
+                    //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                    htm.Append("<th align=\"center\">" + ColHeaders[j] + "</th>");  // hard-wire header alignment to centered
+                }
+                htm.AppendLine(" </tr>");
+            }
+
+            if (RowsOfColumnsFlag)
+            {
+                for (int i = 0; i < TableData.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
+                {
+                    htm.Append("<tr> ");
+                    for (int j = 0; j < TableData[i].Count; j++)
+                    {
+                        htm.Append("<td");
+                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
+                        if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                        htm.Append(">");
+                        htm.Append(TableData[i][j]);
+                        htm.Append("</td>");
+                    }
+                    htm.AppendLine(" </tr>");
+                }
+            }
+            else
+            {
+                for (int i = 0; i < TableData[0].Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
+                {
+                    htm.Append("<tr> ");
+                    for (int j = 0; j < TableData.Count; j++)
+                    {
+                        htm.Append("<td");
+                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
+                        if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htm.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
+                        htm.Append(">");
+                        htm.Append(TableData[j][i]);
+                        htm.Append("</td>");
+                    }
+                    htm.AppendLine(" </tr>");
+                }
+            }
+            htm.AppendLine("</table>");
+            if (CenterFlag) htm.Append("</center>");
+        }
+
+        /// <summary>
+        /// The best approach for tables
+        /// </summary>
+        /// <param name="Main">DataTable of strings</param>
+        /// <param name="ColAlignments">array of L, R, C, left. right, center, centre codes. If length is lesst than no of columns in the datatable then the
+        ///                             alignments get topped up with center's</param>
+        /// <param name="ColorData">DataTable of strings describing the shading color. No entry for a cell means not shaded</param>
+        /// <param name="BorderFlag"></param>
+        /// <param name="CenterFlag"></param>
+        /// <param name="defaultFormat">The string format to use in tables if values are real</param>
+        public void Table(DataTable Main, IList<string> ColAlignments, DataTable ColorData, bool BorderFlag, bool CenterFlag, string defaultFormat = "0.###")
+        {
+            if (Main == null || Main.Rows.Count == 0) return;
+
+            if (CenterFlag) htm.Append("<center>");
+            htm.Append("<table"); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+
+            //int Ncols = TableData[0].Length;   // TableData[0] is first row in RowsOfColumns mode
+            //if (!RowsOfColumnsFlag) Ncols = TableData.Length;
+
+            // preprocess Column alignments to ensure legal
+            if (ColAlignments == null) ColAlignments = new string[Main.Columns.Count];
+
+            if (ColAlignments.Count < Main.Columns.Count) // extend partially supplied alignments to fill with C's
+            {
+                var _ColAlignments = new string[Main.Columns.Count];
+                for (int i = 0; i < _ColAlignments.Length; i++)
+                {
+                    if (i < ColAlignments.Count) _ColAlignments[i] = ColAlignments[i]; else _ColAlignments[i] = "C";
+                }
+                ColAlignments = _ColAlignments;
+            }
+            //if (ColAlignments == null || ColAlignments.Count < Main.Columns.Count) ColAlignments = new string[Main.Columns.Count];
+            for (int j = 0; j < ColAlignments.Count; j++)
+            {
+                if (ColAlignments[j] == null || ColAlignments[j].Length == 0) ColAlignments[j] = "center";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "L") ColAlignments[j] = "left";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "R") ColAlignments[j] = "right";
+                else ColAlignments[j] = "center";
+
+                ColAlignments[j] = ColAlignments[j].ToLower().Replace("centre", "center");
+            }
+
+            //ColHeaders: <tr> <th align="left">Extension</th>  <th align="left">Format</th> </tr>
+            htm.Append("<tr> ");
+            for (int j = 0; j < Main.Columns.Count; j++)
+            {
+                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htm.Append("<th align=\"center\">" + Main.Columns[j].ColumnName + "</th>");  // hard-wire header alignment to centered
+            }
+            htm.AppendLine(" </tr>");
+
+
+            // fill in the table
+            for (int i = 0; i < Main.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
+            {
+                htm.Append("<tr> ");
+                for (int j = 0; j < Main.Columns.Count; j++)
+                {
+                    htm.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData.Rows[i][j] != DBNull.Value && (string)ColorData.Rows[i][j] != "") htm.Append(" bgcolor=\"" + (string)ColorData.Rows[i][j] + "\"");
+                    htm.Append(">");
+                    if (Main.Rows[i][j] != DBNull.Value && Main.Columns[j].DataType == typeof(double))
+                        htm.Append(((double)Main.Rows[i][j]).ToString(defaultFormat));
+                    else if (Main.Rows[i][j] != DBNull.Value && Main.Columns[j].DataType == typeof(float))
+                        htm.Append(((float)Main.Rows[i][j]).ToString(defaultFormat));
+                    else
+                        htm.Append(Main.Rows[i][j]);
+                    htm.Append("</td>");
+                }
+                htm.AppendLine(" </tr>");
+            }
+
+            htm.AppendLine("</table>");
+            if (CenterFlag) htm.Append("</center>");
+        }
+
+        /// <summary>
+        /// UNTESTED
+        /// </summary>
+        /// <param name="dataTable"></param>
+        /// <param name="Format">Format string (for non string data elements)</param>
+        /// <param name="ColAlignments"></param>
+        /// <param name="ColorData">string[j][i] ColorData</param>
+        /// <param name="BorderFlag"></param>
+        /// <param name="CenterFlag"></param>
+        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, IList<IList<string>> ColorData, bool BorderFlag, bool CenterFlag)
+        {
+            if (dataTable == null || dataTable.Columns.Count == 0) return;
+
+            if (CenterFlag) htm.Append("<center>");
+            htm.Append("<table"); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+
+            int Ncols = dataTable.Columns.Count;
+
+            // preprocess Column alignments to ensure legal
+            if (ColAlignments == null || ColAlignments.Count < Ncols) ColAlignments = new string[Ncols];
+            for (int j = 0; j < ColAlignments.Count; j++)
+            {
+                if (ColAlignments[j] == null || ColAlignments[j].Length == 0) ColAlignments[j] = "center";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "L") ColAlignments[j] = "left";
+                else if (ColAlignments[j].Substring(0, 1).ToUpper() == "R") ColAlignments[j] = "right";
+                else ColAlignments[j] = "center";
+
+                ColAlignments[j] = ColAlignments[j].ToLower().Replace("centre", "center");
+            }
+
+
+            htm.Append("<tr> ");
+            for (int j = 0; j < Ncols; j++)
+            {
+                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htm.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
+            }
+            htm.AppendLine(" </tr>");
+
+            for (int i = 0; i < dataTable.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
+            {
+                htm.Append("<tr> ");
+                for (int j = 0; j < dataTable.Columns.Count; j++)
+                {
+                    htm.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htm.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
+                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                    htm.Append(">");
+
+                    object element = dataTable.Rows[i][j];
+                    Type typ = dataTable.Columns[j].DataType;
+                    string str = "";
+                    if (element != DBNull.Value)
+                    {
+                        if (typ == typeof(string))
+                        {
+                            str = (string)element;
+                        }
+                        else if (typ == typeof(double))
+                        {
+                            if (Format != null && j < Format.Count && Format[j] != null && Format[j].Length > 0)
+                            {
+                                str = ((double)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((double)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(int))
+                        {
+                            if (Format != null && j < Format.Count && Format[j] != null && Format[j].Length > 0)
+                            {
+                                str = ((int)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((int)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(float))
+                        {
+                            if (Format != null && j < Format.Count && Format[j] != null && Format[j].Length > 0)
+                            {
+                                str = ((float)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((float)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(Int16))
+                        {
+                            if (Format != null && j < Format.Count && Format[j] != null && Format[j].Length > 0)
+                            {
+                                str = ((Int16)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((Int16)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(decimal))
+                        {
+                            if (Format != null && j < Format.Count && Format[j] != null && Format[j].Length > 0)
+                            {
+                                str = ((decimal)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((decimal)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(bool))
+                        {
+                            str = ((bool)element).ToString();
+                        }
+                    }
+                    else  // object was empty
+                    {
+                        str = "";
+                    }
+                    htm.Append(str + "</td>");
+                }
+                htm.AppendLine(" </tr>");
+            }
+
+            htm.AppendLine("</table>");
+            if (CenterFlag) htm.Append("</center>");
+        }
+
+        /// <summary>
+        /// UNTESTED
+        /// </summary>
+        /// <param name="dataTable"></param>
+        /// <param name="Format"></param>
+        /// <param name="ColAlignments"></param>
+        /// <param name="BorderFlag"></param>
+        /// <param name="CenterFlag"></param>
+        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, bool BorderFlag, bool CenterFlag)
+        {
+            Table(dataTable, Format, ColAlignments, null, BorderFlag, CenterFlag);
+        }
+
+        // this is to be the main datatable series
+        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, bool BorderFlag, bool CenterFlag)
+        {
+            Table(dataTable, FormatDict, ColAlignDict, null, BorderFlag, CenterFlag);
+
+        }
+
+        // this is to be the main datatable series
+        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, DataTable ColorData, bool BorderFlag, bool CenterFlag)
+        {
+            if (dataTable == null || dataTable.Columns.Count == 0) return;
+
+            if (CenterFlag) htm.Append("<center>");
+            htm.Append("<table"); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+
+            int Ncols = dataTable.Columns.Count;
+
+            // preprocess Column alignments
+            string[] ColAlignments = new string[Ncols];
+            for (int j = 0; j < Ncols; j++)
+            {
+                ColAlignments[j] = "center";
+                string colnam = dataTable.Columns[j].ColumnName;
+                if (ColAlignDict != null && ColAlignDict.ContainsKey(colnam))
+                {
+                    string align = ColAlignDict[colnam];
+                    if (align.Length > 0)
+                    {
+                        if (align.Substring(0, 1).ToUpper() == "L") align = "left";
+                        else if (align.Substring(0, 1).ToUpper() == "R") align = "right";
+                        else align = "center";
+                    }
+                    ColAlignments[j] = align;
+                }
+            }
+            // preprocess format
+            string[] Format = new string[Ncols];
+            for (int j = 0; j < Ncols; j++)
+            {
+                Format[j] = null;
+                string colnam = dataTable.Columns[j].ColumnName;
+                if (FormatDict != null && FormatDict.ContainsKey(colnam))
+                {
+                    string fmt = FormatDict[colnam];
+                    if (fmt.Length > 0) Format[j] = fmt;
+                }
+            }
+
+
+            htm.Append("<tr> ");
+            for (int j = 0; j < Ncols; j++)
+            {
+                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htm.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
+            }
+            htm.AppendLine(" </tr>");
+
+            for (int i = 0; i < dataTable.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
+            {
+                htm.Append("<tr> ");
+                for (int j = 0; j < dataTable.Columns.Count; j++)
+                {
+                    string colnam = dataTable.Columns[j].ColumnName;
+                    htm.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData.Columns.Contains(colnam) && ColorData.Rows[i][colnam] != DBNull.Value && (string)ColorData.Rows[i][colnam] != "") htm.Append(" bgcolor=\"" + (string)ColorData.Rows[i][colnam] + "\"");
+                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                    htm.Append(">");
+
+                    object element = dataTable.Rows[i][j];
+                    Type typ = dataTable.Columns[j].DataType;
+                    string str = "";
+                    if (element != DBNull.Value)
+                    {
+                        if (typ == typeof(string))
+                        {
+                            str = (string)element;
+                        }
+                        else if (typ == typeof(double))
+                        {
+                            if (Format[j] == null || Format[j].Trim().ToUpper().StartsWith("N"))  // My "Nice" format e.g "N3" or ""
+                            {
+                                int digits = 3;                                                     // default is 3 dps
+                                if (Format[j] != null && Format[j].Trim().Length > 1)
+                                {
+                                    digits = Convert.ToInt32(Format[j].Trim().Substring(1));
+                                }
+                                str = NiceFormat((double)element, digits);
+                            }
+                            else if (Format[j] != null)                                             // eg "F3" or "0.00"
+                            {
+                                str = ((double)element).ToString(Format[j]);
+                            }
+                            else                                                                    // default
+                            {
+                                str = ((double)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(int))
+                        {
+                            if (Format[j] != null)
+                            {
+                                str = ((int)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((int)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(float))
+                        {
+                            if (Format[j] != null)
+                            {
+                                str = ((float)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((float)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(Int16))
+                        {
+                            if (Format[j] != null)
+                            {
+                                str = ((Int16)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((Int16)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(decimal))
+                        {
+                            if (Format[j] != null)
+                            {
+                                str = ((decimal)element).ToString(Format[j]);
+                            }
+                            else
+                            {
+                                str = ((decimal)element).ToString();
+                            }
+                        }
+                        else if (typ == typeof(bool))
+                        {
+                            str = ((bool)element).ToString();
+                        }
+                    }
+                    else  // object was empty
+                    {
+                        str = "";
+                    }
+                    htm.Append(str + "</td>");
+                }
+                htm.AppendLine(" </tr>");
+            }
+
+            htm.AppendLine("</table>");
+            if (CenterFlag) htm.Append("</center>");
+        }
+
+        /// <summary>
+        /// OOPS - FILTERS OUT THE WAFERNO!
+        /// Method for filtering HTML text created by HtmlBuilder class to keep only the lines in tables that are colour highlighted.
+        /// Lines outside of tables are not filtered.
+        /// For example to post-process html parameter tables to show only OOC table entries.
+        /// Example of usage:  
+        /// webBrowser.DocumentText = HtmlTableFilter(HtmlText, RemoveNonOocLinesFlag);
+        /// </summary>
+        /// <param name="HtmlText">The string containing the HTML</param>
+        /// <param name="RemoveNonColouredLines">Set true to keep only highlighted </param>
+        /// <param name="ColoursToRetain">defaults to Orange and Red</param>
+        /// <param name="ReplacementMessages">Optional list of messges to replace any tables that have all rows
+        ///                          filtered out. The index of the message list corresponds to the index of the
+        ///                          tables in the Html document.</param>
+        /// <param name="ReplacementMessagesFontSize">"1" to "7". e.g. "3" or "+1"</param>
+        /// <returns></returns>
+        public static string HtmlTableFilter(string HtmlText, bool RemoveNonColouredLines = true, IList<string> ColoursToRetain = null, IList<string> ReplacementMessages = null, string ReplacementMessagesFontSize = "3", bool ForceFirstColumnPopulated = true)
+        {
+            if (!RemoveNonColouredLines) return HtmlText;
+
+            if (ColoursToRetain == null) ColoursToRetain = new List<string> { "Orange", "Red" };
+            for (int i = 0; i < ColoursToRetain.Count; i++) { ColoursToRetain[i] = ColoursToRetain[i].ToLower(); }  // so not case sensitive
+
+            if (ReplacementMessages == null) ReplacementMessages = new List<string>(0);
+
+            StringBuilder sb = new StringBuilder();
+
+            using (var sr = new StringReader(HtmlText))
+            {
+                string line;
+                bool InTable = false;
+                bool DidTableHaveRows = false;
+                int TableCount = 0;
+                string FirstColumnValue = null;  // For when FirstColumn is the WaferNo and is filtered out
+                while ((line = sr.ReadLine()) != null)
+                {
+                    bool keepLine = true;
+
+                    string lineLC = line.ToLower();
+                    if (lineLC.Contains("<table")) { InTable = true; DidTableHaveRows = false; TableCount++; FirstColumnValue = null; continue; }
+                    if (lineLC.Contains("</table"))
+                    {
+                        InTable = false;
+
+                        // table had nothing left so substitue a message if provided
+                        if (!DidTableHaveRows && TableCount <= ReplacementMessages.Count)
+                        {//<font size="5" color="#ff0000">font size and color</font>
+                            sb.AppendLine("<p><font size=\"" + ReplacementMessagesFontSize.Trim('"') + "\">" + ReplacementMessages[TableCount - 1] + "</font></p>");
+                        }
+                        continue;
+                    }
+
+                    if (InTable)
+                    {
+                        if (ForceFirstColumnPopulated && String.IsNullOrEmpty(FirstColumnValue))  // remember the first non-blank item of the table
+                        {
+                            string firstColValue = "";
+                            if (lineLC.Trim().StartsWith("<tr")) firstColValue = HtmlTableRowFirstElement(lineLC);
+                            if (!String.IsNullOrEmpty(firstColValue)) FirstColumnValue = firstColValue;
+                        }
+
+                        keepLine = false;
+                        //if (lineLC.Contains("<td") && lineLC.Contains("bgcolor") && lineLC.Contains(ColourToRetain.ToLower())) keepLine = true;
+                        if (lineLC.Contains("<td") && lineLC.Contains("bgcolor"))
+                        {
+                            foreach (var colour in ColoursToRetain)
+                            {
+                                if (lineLC.Contains(colour)) { keepLine = true; DidTableHaveRows = true; }
+                            }
+                        }
+
+                        // make sure first column is populated - PROBABLY WANT TO MAKE JUST THE FIRST ONE OF THE SET??
+                        // OR MAKE THE Html TABLE ON THE FLY FROM THE SUMMARY TABLE??
+                        if (ForceFirstColumnPopulated && keepLine && HtmlTableRowFirstElement(lineLC).Trim().Length == 0)
+                        {
+                            line = HtmlTableRowInsertAtFirstElement(line, FirstColumnValue);
+                        }
+                    }
+
+                    if (keepLine) sb.AppendLine(line);
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// returns an array of elements parsed from an html [tr] row</tr>
+        /// </summary>
+        /// <param name="tableLine"></param>
+        /// <returns></returns>
+        static string[] HtmlTableRowSplit(string tableLine)
+        {
+            tableLine = tableLine.Replace("<tr>", "").Replace("</tr>", "").Replace("<th align=\"center\">", "|").Replace("</th>", "|");
+            string[] parts = tableLine.Split('|');
+            return parts;
+        }
+
+        /// <summary>
+        /// returns the first element parse from an html [tr] row
+        /// </summary>
+        /// <param name="tableLine"></param>
+        /// <returns>typically the WaferNo or blank</returns>
+        static string HtmlTableRowFirstElement(string tableLine)
+        {
+            string[] parts = HtmlTableRowSplit(tableLine);
+            if (parts.Length == 0) return "";
+            return parts[0].Trim();
+        }
+
+        /// <summary>
+        /// add the ItemToInsert text inb ta the end of the first item of the HTML table row
+        /// </summary>
+        /// <param name="tableLine"></param>
+        /// <param name="ItemToInsert"></param>
+        /// <returns></returns>
+        static string HtmlTableRowInsertAtFirstElement(string tableLine, string ItemToInsert)
+        {
+            string[] parts = tableLine.Split(new string[] { "</th>" }, StringSplitOptions.None);
+            if (parts.Length > 0)
+            {
+                parts[0] += ItemToInsert;
+            }
+            return String.Join("</th>", parts);
+        }
+        #endregion
+
+        #region Images
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="Caption"></param>
+        /// <param name="border"></param>
+        /// <returns></returns>
+        public bool Image(string filepath, int width, int height, string Caption, bool border)
+        {
+            int borderWid = 0; if (border) borderWid = 1;
+
+            bool OK = false;
+            if (File.Exists(filepath)) OK = true;
+            /*
+            <h2>Norwegian Mountain Trip</h2>
+            <img border="0" src="/images/pulpit.jpg" alt="Pulpit rock" width="304" height="228"> */
+
+            htm.AppendLine("<img border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
+                "\" height=\"" + height.ToString() + "\">");
+            htm.AppendLine("<br>" + Caption + "</br>");
+
+            return OK;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filepath"></param>
+        /// <param name="width"></param>
+        /// <param name="Caption"></param>
+        /// <param name="border"></param>
+        /// <returns></returns>
+        public bool Image(string filepath, int width, string Caption, bool border)
+        {
+            int borderWid = 0; if (border) borderWid = 1;
+
+            bool OK = false;
+            if (File.Exists(filepath)) OK = true;
+            /*
+            <h2>Norwegian Mountain Trip</h2>
+            <img border="0" src="/images/pulpit.jpg" alt="Pulpit rock" width="304" height="228"> */
+
+            htm.AppendLine("<img border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
+                "\">");
+            htm.AppendLine("<br>" + Caption + "</br>");
+
+            return OK;
+        }
+        #endregion
+
+        #region structures
+        /// <summary>
+        /// Create your very own div! Right here!
+        /// </summary>
+        /// <param name="contents"></param>
+        public void Div(StringBuilder contents)
+        {
+            if (contents.ToString().ToLower().Contains("<div>") && contents.ToString().ToLower().Contains("</div>"))
+                htm.Append(contents);
+            else
+                htm.Append("<div>" + contents.ToString() + "</div>");
+        }
+        #endregion
+
+        #region Helper_utilities/Formatting
+        /// <summary>
+        /// General list/listItem object
+        /// </summary>
+        public class ListObj
+        {
+            public string Text = null;
+            public bool Numbered = false;
+            public List<ListObj> Sublist = new List<ListObj>(4);
+
+            public ListObj() { }
+
+            public ListObj(string Text)
+            {
+                this.Text = Text;
+            }
+
+            public ListObj(string Text, List<ListObj> Sublist)
+            {
+                this.Text = Text;
+                this.Sublist = Sublist;
+            }
+
+            public string GenerateHtml()   // recursive expansion of the list. NOT WORKING
+            {
+                string beg = "<ul>\r\n", end = "</ul>\r\n";
+                if (Numbered) beg = "<ol>\r\n"; end = "</ol>\r\n";
+
+                string ret = beg + Text + "\r\n";
+                if (Sublist != null && Sublist.Count != 0)
+                {
+                    foreach (ListObj lit in Sublist)
+                    {
+                        ret += lit.GenerateHtml();
+                    }
+                }
+                ret += end;
+                return ret;
+            }
+
+        }
+
+        public static ListObj MakeSubList(string[] Items, bool NumberedList)
+        {
+            ListObj lo = new ListObj();
+            lo.Numbered = NumberedList;
+
+            foreach (string itemstr in Items)
+            {
+                ListObj li = new ListObj();
+                li.Text = itemstr;
+                lo.Sublist.Add(li);
+            }
+            return lo;
+        }
+
+        public static ListObj MakeSublist(ListObj[] Items, bool NumberedList)
+        {
+            ListObj lo = new ListObj();
+            lo.Numbered = NumberedList;
+            foreach (ListObj item in Items)
+            {
+                lo.Sublist.Add(item);
+            }
+            return lo;
+        }
+
+        /// <summary>
+        /// Displays HoverText when mouse hovers over the Text
+        /// </summary>
+        /// <param name="Text"></param>
+        /// <param name="HoverText"></param>
+        /// <returns></returns>
+        public static string HoverText(string Text, string HoverText) //<abbr title="as soon as possible">ASAP</abbr>
+        {
+            return "<abbr title=\"" + HoverText + "\">" + Text + "</abbr>";
+        }
+
+        /// <summary>
+        /// Returns a formatted hyperlink
+        /// </summary>
+        /// <param name="LinkText"></param>
+        /// <param name="LinkUrlTarget"></param>
+        /// <param name="NewWindow">set true to open the link in a new browser window</param>
+        /// <returns></returns>
+        public static string FormatHyperLink(string LinkText, string LinkUrlTarget, bool NewWindow) // <a href="url">Link text</a>  or <a href="url" target="_blank">Link Text</a> 
+        {
+            string result;
+            if (!NewWindow)
+                result = "<a href=\"" + LinkUrlTarget + "\">" + LinkText + "</a>";
+            else
+                result = "<a href=\"" + LinkUrlTarget + "\" target=\"_blank\">" + LinkText + "</a>";
+            return result;
+        }
+
+
+        public static string FormatLocalLink(string LinkText, string LocalLabel, bool NewWindow) // <a href="#label">Link text</a>  or <a href="#label" target="_blank">Link Text</a> 
+        {
+            string result;
+            if (!NewWindow)
+                result = "<a href=\"#" + LocalLabel + "\">" + LinkText + "</a>";
+            else
+                result = "<a href=\"#" + LocalLabel + "\" target=\"_blank\">" + LinkText + "</a>";
+            return result;
+        }
+
+        /// <summary>
+        /// Examples: emailstr=FormatEmailLink("rob.davis@company.com"),  emailstr=FormatEmailLink("rob", "rob.davis@company.com", "subject string", "body string")
+        /// 
+        /// </summary>
+        /// <param name="LinkText">set null for LinkText to inherit Email Address</param>
+        /// <param name="EmailAddress">Set null for Email address to inherit LinkText [Default]</param>
+        /// <param name="subject">set blank for no subject [Default]</param>
+        /// <param name="body">set blank for no body [Default]</param>
+        /// <returns></returns>
+        public static string FormatEmailLink(string LinkText, string EmailAddress = null, string subject = "", string body = "") // <a href="url">Link text</a>  or <a href="url" target="_blank">Link Text</a> 
+        {
+            if (subject == null) subject = "";
+            if (subject != "") subject = "?subject=" + subject;
+
+            if (body == null) body = "";
+            if (body != "") body = "?body=" + body;
+
+            if (EmailAddress == null) EmailAddress = LinkText;
+            if (LinkText == null) LinkText = EmailAddress;
+
+            string result;
+            result = "<a href=\"mailto:" + EmailAddress + subject + body + "\">" + LinkText + "</a>";
+            return result;
+        }
+
+        /// <summary>
+        /// replaces all instances of a placeholder keys in the document with the specified text
+        /// </summary>
+        /// <param name="LPlaceholderSubstitutePairs">List of string[] {placeholder, subsitute} keys</param>
+        public void PlaceholderReplace(List<string[]> LPlaceholderSubstitutePairs)
+        {
+            foreach (string[] pair in LPlaceholderSubstitutePairs)
+            {
+                if (pair != null && pair.Length > 1)
+                {
+                    htm.Replace(pair[0], pair[1]);
+                }
+            }
+        }
+
+
+        public static string it(string Text)
+        {
+            return "<it>" + Text + "</it>";
+        }
+        public static string Italics(string Text)
+        {
+            return "<it>" + Text + "</it>";
+        }
+
+        public static string b(string Text)
+        {
+            return "<b>" + Text + "</b>";
+        }
+        public static string Bold(string Text)
+        {
+            return "<b>" + Text + "</b>";
+        }
+        public static string Sub(string Text)
+        {
+            return "<sub>" + Text + "</sub>";
+        }
+        public static string Sup(string Text)
+        {
+            return "<sup>" + Text + "</sup>";
+        }
+        public static string Small(string Text)
+        {
+            return "<small>" + Text + "</small>";
+        }
+
+        static string NiceFormat(double val, int ndps)
+        {
+            double MinDpVal = Math.Pow(10, -(ndps - 1));
+
+            string fmt = "";
+            if (Math.Abs(val) > MinDpVal && Math.Abs(val) < 1e4)
+            {
+                fmt = "f" + ndps.ToString();
+                string sval = val.ToString(fmt);
+
+                sval = sval.TrimEnd(new char[] { '0' });
+                sval = sval.TrimEnd(new char[] { '.' });
+                if (sval.Length == 0) sval = "0";
+                return sval;
+            }
+            else if (Math.Abs(val) < 10 * Double.Epsilon)
+                return "0";
+            else
+            {
+                fmt = "0.";
+                for (int i = 0; i < ndps; i++)
+                {
+                    fmt += "0";
+                }
+                fmt += "e00";
+                string sval = val.ToString(fmt);
+
+                string[] parts = sval.Split(new char[] { 'e' });
+                parts[0] = parts[0].TrimEnd(new char[] { '0' });
+                parts[0] = parts[0].TrimEnd(new char[] { '.' });
+                if (parts.Length > 1)
+                    return parts[0] + "e" + parts[1];
+                else
+                    return parts[0];    // can happen if value is NaN
+            }
+
+        }
+
+        public void Preformatted(string text)
+        {
+            if (text == null) return;
+            htm.AppendLine("<pre>");
+            htm.AppendLine(text);
+            htm.AppendLine("</pre>");
+        }
+        #endregion utilities
+
+        #region Scripting and Styling
+        /// <summary>
+        /// Add a custom js script to the webpage.
+        /// </summary>
+        /// <param name="script"></param>
+        public void Script(StringBuilder script)
+        {
+            if (script.ToString().ToLower().Contains("<script>") && script.ToString().ToLower().Contains("</script>"))
+                htm.Append(script);
+            else
+                htm.Append("<script>" + script.ToString() + "</script>");
+        }
+
+        public void Script(string script)
+        {
+            if (script.ToLower().Contains("<script>") && script.ToLower().Contains("</script>"))
+                htm.Append(script);
+            else
+                htm.Append("<script>" + script + "</script>");
+        }
+
+        /// <summary>
+        /// Add a custom css style to the webpage.
+        /// </summary>
+        /// <param name="style"></param>
+        public void Style(StringBuilder style)
+        {
+            if (style.ToString().ToLower().Contains("<style>") && style.ToString().ToLower().Contains("</style>"))
+                htm.Append(style);
+            else
+                htm.Append("<style>" + style.ToString() + "</style>");
+        }
+
+        public void Style(string style)
+        {
+            if (style.ToLower().Contains("<style>") && style.ToLower().Contains("</style>"))
+                htm.Append(style);
+            else
+                htm.Append("<style>" + style + "</style>");
+        }
+        #endregion
+    }
+}

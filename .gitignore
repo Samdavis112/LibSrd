@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/LibSrd/SecretVariables.Designer.cs
+/LibSrd/SecretVariables.resx

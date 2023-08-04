@@ -1,6 +1,6 @@
 # LibSrd
 A .NET Framework 4.8 C# library containing methods and functions for Database interation, plotting, Console menu and WPF fixes.  
-by Sam Davis - with lots of inspiration from Rob Davis
+by Sam Davis - with lots of inspiration from my dad: Rob Davis
 
 ## Detail
 |Class|Description|

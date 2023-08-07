@@ -966,7 +966,9 @@ namespace LibSrd
         /// <param name="contents"></param>
         public void Div(StringBuilder contents, string Class=null)
         {
-            if (contents.ToString().ToLower().Contains("<div") && contents.ToString().ToLower().Contains("</div>"))
+            if (contents == null)
+                htm.Append("<div" + GetClass(Class) + ">" + "</div>");
+            else if (contents.ToString().ToLower().Contains("<div") && contents.ToString().ToLower().Contains("</div>"))
                 htm.Append(contents);
             else
                 htm.Append("<div" + GetClass(Class) + ">" + contents.ToString() + "</div>");

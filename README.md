@@ -13,4 +13,5 @@ by Sam Davis - with lots of inspiration from my Dad, Rob.
 |XmlSettings| A very useful class that will serialise settings in it into an xml file.|
 |JsonSettings| A very useful class that will serialise settings in it into an json file.|
 |HtmlBuilder| Will write a HTML document that can have tables, lists, images etc...|
+|Markdown||
 

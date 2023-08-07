@@ -1,13 +1,13 @@
 # LibSrd
-A .NET Framework 4.8 C# library containing methods and functions for Database interation, plotting, Console menu and WPF fixes.  
-by Sam Davis - with lots of inspiration from my dad: Rob Davis
+A .NET Framework 4.8 C# library containing various methods and functions I use often, that having here avoids constant re-writing.
+by Sam Davis - with lots of inspiration from my Dad, Rob. 
 
 ## Detail
 |Class|Description|
 |---|---|
 |Conversion| Has CSV, XML, JSON and DataTable conversion methods.|
 |SDMenu| Its own class that creates good looking menus for console based programs.|
-|WpfHelpers| Fixes some annoyances within C#'s WPF.|
+|WpfHelpers| Fixes some annoyances within C#'s WPF. (Mostly Obselete)|
 |SqlHelpers| Saves the need to do manual sql connections.|
 |Result| A class used to have nice results for external api's and such.|
 |EmailMe| A class that will email the specified email address from given Gmail address|

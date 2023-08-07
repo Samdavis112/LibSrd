@@ -3,13 +3,18 @@ using System.Net.Mail;
 
 namespace LibSrd
 {
-    public class EmailMe
+    public class EmailObj
     {
-        private static string smtp_server = "smtp.gmail.com";
-        private static string Email = SecretVariables.senderEmail;
-        private static string Password = SecretVariables.senderPassword;
+        public string smtp_server = "smtp.gmail.com";
+        private string Email;
+        private string Password;
 
-        public static void SendEmail(string subject, string recipient, string body)
+        public EmailObj(string email, string password)
+        {
+            Email = email;
+            Password = password;
+        }
+        public void SendEmail(string subject, string recipient, string body)
         {
             //Initialise message instance
             var smtpClient = new SmtpClient(smtp_server)

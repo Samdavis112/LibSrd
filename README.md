@@ -2,7 +2,7 @@
 A .NET Framework 4.8 C# library containing various methods and functions I use often, that having here avoids constant re-writing.
 by Sam Davis - with lots of inspiration from my Dad, Rob. 
 
-### Detail
+### Contents
 |Class|Description|
 |---|---|
 |Conversion| Has CSV, XML, JSON and DataTable conversion methods.|

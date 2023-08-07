@@ -187,7 +187,7 @@ namespace LibSrd
             htm.AppendLine("<body>");
         }
 
-        public bool CloseWriteHtml(string filepath)
+        public bool WriteHtml(string filepath)
         {
             htm.AppendLine("</body>");
             htm.AppendLine("</html>");
@@ -206,7 +206,7 @@ namespace LibSrd
             return true;
         }
 
-        public string CloseGetHtml()
+        public string GetHtml()
         {
             // Add finishing tags
             htm.AppendLine("</body>");

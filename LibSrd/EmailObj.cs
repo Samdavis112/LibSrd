@@ -5,7 +5,7 @@ namespace LibSrd
 {
     public class EmailObj
     {
-        public string smtp_server = "smtp.gmail.com";
+        private string smtp_server = "smtp.gmail.com";
         private string Email;
         private string Password;
 

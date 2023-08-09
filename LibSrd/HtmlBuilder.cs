@@ -8,17 +8,48 @@ namespace LibSrd
 {
     class HtmlBuilder
     {
-        // <summary>
-        /// The default styles applied in <head> by HtmlBuilder
-        /// </summary>
-        public bool DefaultInlineStyle = true;
+        private StringBuilder htmlDocument = new StringBuilder();
+
         /// <summary>
-        /// Where the actual raw HTML is stored during editing
+        /// Open the html file and initalises the object.
         /// </summary>
-        private StringBuilder htm = new StringBuilder();
-        public HtmlBuilder(bool useDefaultStyles=true)
+        /// <param name="Title">Form Title</param>
+        /// <param name="useDefaultStyles">Should the default styles be used?</param>
+        /// <param name="StyleFilepath">path of CSS file</param>
+        /// <param name="DefaultImageRoot">Base path of default images in the document</param>
+        public HtmlBuilder(string Title, bool useDefaultStyles=true, string StyleFilepath = null, string DefaultImageRoot = null)
         {
-            DefaultInlineStyle = useDefaultStyles;
+            htmlDocument.AppendLine("<html>");
+            htmlDocument.AppendLine("<head>");
+
+            if (useDefaultStyles)
+            {
+                htmlDocument.AppendLine("<style>");
+                // htmlDocument.AppendLine(@"@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400&display=swap');");
+                htmlDocument.AppendLine("* { font-family: Verdana, arial, Helvetica, sans-serif; }");
+                htmlDocument.AppendLine("body { font-size: 10.5pt; }");
+                htmlDocument.AppendLine("H1 { font-size: 17pt;}");
+                htmlDocument.AppendLine("H2 { font-size: 13pt;}");
+                htmlDocument.AppendLine("H3 { font-size: 11pt;}");
+                htmlDocument.AppendLine("H4,H5,TH,TD { font-size: 10pt;}");
+                htmlDocument.AppendLine("table { border-collapse: collapse; }");
+                htmlDocument.AppendLine("table, th { border: solid #888888 1px; padding: 6px; }");
+                htmlDocument.AppendLine("table, td { border: solid #888888 1px; padding: 4px; }");
+                htmlDocument.AppendLine("</style>");
+            }
+
+            htmlDocument.AppendLine("<title>" + Title + "</title>");
+            if (StyleFilepath != null && StyleFilepath != "")
+            {
+                htmlDocument.AppendLine("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + StyleFilepath + "\" title=\"DevEng Style\" />");
+            }
+            if (DefaultImageRoot != null && DefaultImageRoot != "")
+            {
+                //<base href="http://www.w3schools.com/images/"
+                htmlDocument.AppendLine("<base href=\"" + DefaultImageRoot + "\">");
+            }
+            htmlDocument.AppendLine("</head>");
+            htmlDocument.AppendLine("<body>");
         }
 
         #region Comments/RawText/HTML
@@ -29,8 +60,8 @@ namespace LibSrd
         /// <param name="Text"></param>
         public void AppendRawText(string Text)
         {
-            htm.Append(Text);
-            htm.AppendLine();
+            htmlDocument.Append(Text);
+            htmlDocument.AppendLine();
         }
 
         /// <summary>
@@ -49,7 +80,7 @@ namespace LibSrd
                 }
             }
 
-            htm.Append(snippet);
+            htmlDocument.Append(snippet);
             return;
         }
 
@@ -69,13 +100,13 @@ namespace LibSrd
                 }
             }
 
-            htm.Append(snippet);
+            htmlDocument.Append(snippet);
             return;
         }
 
         public void Comment(string Comment)
         {
-            htm.AppendLine("<!--" + Comment + "-->");
+            htmlDocument.AppendLine("<!--" + Comment + "-->");
         }
         #endregion
 
@@ -89,29 +120,29 @@ namespace LibSrd
         {
             string lvl = level.ToString();
             if (label == null || label.Length == 0)
-                htm.AppendLine("<h" + lvl + GetClass(Class) + ">" + heading + "</h" + lvl + ">");
+                htmlDocument.AppendLine("<h" + lvl + GetClass(Class) + ">" + heading + "</h" + lvl + ">");
             else
-                htm.AppendLine("<h" + lvl + GetClass(Class) + "><a id=\"" + label + "\">" + heading + "</a></h" + lvl + ">");
+                htmlDocument.AppendLine("<h" + lvl + GetClass(Class) + "><a id=\"" + label + "\">" + heading + "</a></h" + lvl + ">");
         }
 
         public void Para(string text, string Class=null)
         {
-            htm.AppendLine("<p" + GetClass(Class) + ">" + text + "</p>");
+            htmlDocument.AppendLine("<p" + GetClass(Class) + ">" + text + "</p>");
         }
 
         public void Para(StringBuilder text, string Class=null)
         {
-            htm.AppendLine("<p" + GetClass(Class) + ">" + text.ToString() + "</p>");
+            htmlDocument.AppendLine("<p" + GetClass(Class) + ">" + text.ToString() + "</p>");
         }
 
         public void Line()
         {
-            htm.AppendLine("<hr>");
+            htmlDocument.AppendLine("<hr>");
         }
 
         public void Break()
         {
-            htm.AppendLine("<br>");
+            htmlDocument.AppendLine("<br>");
         }
 
         public void ContactInfo(IEnumerable<string> Lines, string Class=null)
@@ -122,12 +153,12 @@ namespace LibSrd
                     Address: Box 564, Disneyland<br>
                     Phone: +12 34 56 78
                 </address> */
-            htm.AppendLine("<address" + GetClass(Class) + ">");
+            htmlDocument.AppendLine("<address" + GetClass(Class) + ">");
             foreach (string line in Lines)
             {
-                htm.AppendLine(line + "<br>");
+                htmlDocument.AppendLine(line + "<br>");
             }
-            htm.AppendLine("</address>");
+            htmlDocument.AppendLine("</address>");
         }
 
         public void ContactInfo(string Author, string Email, string Class=null)
@@ -138,84 +169,52 @@ namespace LibSrd
                     Address: Box 564, Disneyland<br>
                     Phone: +12 34 56 78
                 </address> */
-            htm.AppendLine("<address" + GetClass(Class) + ">");
-            htm.AppendLine("Author: " + Author + "<br>");
-            htm.AppendLine("Email: " + FormatEmailLink(Email, Email) + "<br>");
-            htm.AppendLine("</address>");
+            htmlDocument.AppendLine("<address" + GetClass(Class) + ">");
+            htmlDocument.AppendLine("Author: " + Author + "<br>");
+            htmlDocument.AppendLine("Email: " + FormatEmailLink(Email, Email) + "<br>");
+            htmlDocument.AppendLine("</address>");
         }
         #endregion
 
         #region Misc
         /// <summary>
-        /// Open the html file
+        /// Writes the html document to the filepath provided.
         /// </summary>
-        /// <param name="Title">Form Title</param>
-        /// <param name="StyleFilepath">path of CSS file</param>
-        /// <param name="DefaultImageRoot">base path of Default images in the document</param>
-        public void Open(string Title, string StyleFilepath = null, string DefaultImageRoot = null)
-        {
-            htm.AppendLine("<html>");
-            htm.AppendLine("<head>");
-
-            if (DefaultInlineStyle)
-            {
-                htm.AppendLine("<style>");
-                // htm.AppendLine(@"@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400&display=swap');");
-                htm.AppendLine("* { font-family: Verdana, arial, Helvetica, sans-serif; }");
-                htm.AppendLine("body { font-size: 10.5pt; }");
-                htm.AppendLine("H1 { font-size: 17pt;}");
-                htm.AppendLine("H2 { font-size: 13pt;}");
-                htm.AppendLine("H3 { font-size: 11pt;}");
-                htm.AppendLine("H4,H5,TH,TD { font-size: 10pt;}");
-                htm.AppendLine("table { border-collapse: collapse; }");
-                htm.AppendLine("table, th { border: solid #888888 1px; padding: 6px; }");
-                htm.AppendLine("table, td { border: solid #888888 1px; padding: 4px; }");
-                htm.AppendLine("</style>");
-            }
-
-            htm.AppendLine("<title>" + Title + "</title>");
-            if (StyleFilepath != null && StyleFilepath != "")
-            {
-                htm.AppendLine("<link rel=\"stylesheet\" type=\"text/css\" href=\"" + StyleFilepath + "\" title=\"DevEng Style\" />");
-            }
-            if (DefaultImageRoot != null && DefaultImageRoot != "")
-            {
-                //<base href="http://www.w3schools.com/images/"
-                htm.AppendLine("<base href=\"" + DefaultImageRoot + "\">");
-            }
-            htm.AppendLine("</head>");
-            htm.AppendLine("<body>");
-        }
-
+        /// <param name="filepath"></param>
+        /// <returns></returns>
         public bool WriteHtml(string filepath)
         {
-            htm.AppendLine("</body>");
-            htm.AppendLine("</html>");
+            htmlDocument.AppendLine("</body>");
+            htmlDocument.AppendLine("</html>");
             try
             {
-                File.WriteAllText(filepath, htm.ToString());
-                htm.Replace("</body>", "");
-                htm.Replace("</html>", "");
+                File.WriteAllText(filepath, htmlDocument.ToString());
+                htmlDocument.Replace("</body>", "");
+                htmlDocument.Replace("</html>", "");
             }
             catch
             {
-                htm.Replace("</body>", "");
-                htm.Replace("</html>", "");
+                htmlDocument.Replace("</body>", "");
+                htmlDocument.Replace("</html>", "");
                 return false;
             }
             return true;
         }
 
+        /// <summary>
+        /// Will return the html document in a string.
+        /// </summary>
+        /// <returns></returns>
         public string GetHtml()
         {
             // Add finishing tags
-            htm.AppendLine("</body>");
-            htm.AppendLine("</html>");
-            string temp = htm.ToString();
+            htmlDocument.AppendLine("</body>");
+            htmlDocument.AppendLine("</html>");
+            string temp = htmlDocument.ToString();
 
             // Remove finishing tags for next time.
-            htm.Replace("</body>", "");
-            htm.Replace("</html>", "");
+            htmlDocument.Replace("</body>", "");
+            htmlDocument.Replace("</html>", "");
 
             return temp;
         }
@@ -227,47 +226,47 @@ namespace LibSrd
         /// <returns></returns>
         public override string ToString()
         {
-            return htm.ToString();
+            return htmlDocument.ToString();
         }
         #endregion
 
         #region Lists
         public void ListGeneral(ListObj listObj)
         {
-            htm.AppendLine(listObj.GenerateHtml());
+            htmlDocument.AppendLine(listObj.GenerateHtml());
         }
 
         public void ListPlain(IEnumerable<string> items, string Class=null)
         {
             if (items == null) return;
-            htm.AppendLine("<para" + GetClass(Class) +">");
+            htmlDocument.AppendLine("<para" + GetClass(Class) +">");
             foreach (string item in items)
             {
-                htm.AppendLine(item + "<br/>");
+                htmlDocument.AppendLine(item + "<br/>");
             }
-            htm.AppendLine("</para>");
+            htmlDocument.AppendLine("</para>");
         }
 
         public void ListBullet(IEnumerable<string> items, string Class=null)
         {
             if (items == null) return;
-            htm.AppendLine("<ul" + GetClass(Class) + ">");
+            htmlDocument.AppendLine("<ul" + GetClass(Class) + ">");
             foreach (string item in items)
             {
-                htm.AppendLine("<li>" + item + "</li>");
+                htmlDocument.AppendLine("<li>" + item + "</li>");
             }
-            htm.AppendLine("</ul>");
+            htmlDocument.AppendLine("</ul>");
         }
 
         public void ListNumbered(IEnumerable<string> items, string Class=null)
         {
             if (items == null) return;
-            htm.AppendLine("<ol" + GetClass(Class) + ">");
+            htmlDocument.AppendLine("<ol" + GetClass(Class) + ">");
             foreach (string item in items)
             {
-                htm.AppendLine("<li>" + item + "</li>");
+                htmlDocument.AppendLine("<li>" + item + "</li>");
             }
-            htm.AppendLine("</ol>");
+            htmlDocument.AppendLine("</ol>");
         }
 
         /// <summary>
@@ -278,22 +277,22 @@ namespace LibSrd
         public void ListNumbered(string[] Items1, string[][] Items2, string Class=null)   // NEEDS VERIFYING
         {
             if (Items1 == null) return;
-            htm.AppendLine("<ol" + GetClass(Class) +">");
+            htmlDocument.AppendLine("<ol" + GetClass(Class) +">");
             for (int i = 0; i < Items1.Length; i++)
             {
-                htm.AppendLine("<li>" + Items1[i] + "</li>");
+                htmlDocument.AppendLine("<li>" + Items1[i] + "</li>");
                 string[] sublist = Items2[i];
                 if (sublist != null && sublist.Length != 0)
                 {
-                    htm.AppendLine("<ol>");
+                    htmlDocument.AppendLine("<ol>");
                     foreach (string subitem in sublist)
                     {
-                        htm.AppendLine("<li>" + subitem + "</li>");
+                        htmlDocument.AppendLine("<li>" + subitem + "</li>");
                     }
-                    htm.AppendLine("</ol>");
+                    htmlDocument.AppendLine("</ol>");
                 }
             }
-            htm.AppendLine("</ol>");
+            htmlDocument.AppendLine("</ol>");
         }
         #endregion
 
@@ -329,8 +328,8 @@ namespace LibSrd
         {
             if (TableData == null || TableData.Count == 0) return;
 
-            if (CenterFlag) htm.Append("<center>");
-            htm.Append("<table" + GetClass(Class)); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+            if (CenterFlag) htmlDocument.Append("<center>");
+            htmlDocument.Append("<table" + GetClass(Class)); if (BorderFlag) htmlDocument.Append(" border=\"1\""); htmlDocument.AppendLine(">");   // <table border="1">
 
             int Ncols = TableData[0].Count;   // TableData[0] is first row in RowsOfColumns mode
             if (!RowsOfColumnsFlag) Ncols = TableData.Count;
@@ -350,51 +349,51 @@ namespace LibSrd
             if (ColHeaders != null)     // <tr> <th align="left">Extension</th>  <th align="left">Format</th> </tr>
             {
 
-                htm.Append("<tr> ");
+                htmlDocument.Append("<tr> ");
                 for (int j = 0; j < ColHeaders.Count; j++)
                 {
-                    //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
-                    htm.Append("<th align=\"center\">" + ColHeaders[j] + "</th>");  // hard-wire header alignment to centered
+                    //  htmlDocument.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                    htmlDocument.Append("<th align=\"center\">" + ColHeaders[j] + "</th>");  // hard-wire header alignment to centered
                 }
-                htm.AppendLine(" </tr>");
+                htmlDocument.AppendLine(" </tr>");
             }
 
             if (RowsOfColumnsFlag)
             {
                 for (int i = 0; i < TableData.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
                 {
-                    htm.Append("<tr> ");
+                    htmlDocument.Append("<tr> ");
                     for (int j = 0; j < TableData[i].Count; j++)
                     {
-                        htm.Append("<td");
-                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
-                        if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
-                        htm.Append(">");
-                        htm.Append(TableData[i][j]);
-                        htm.Append("</td>");
+                        htmlDocument.Append("<td");
+                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htmlDocument.Append(" align=\"" + ColAlignments[j] + "\"");
+                        if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htmlDocument.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                        htmlDocument.Append(">");
+                        htmlDocument.Append(TableData[i][j]);
+                        htmlDocument.Append("</td>");
                     }
-                    htm.AppendLine(" </tr>");
+                    htmlDocument.AppendLine(" </tr>");
                 }
             }
             else
             {
                 for (int i = 0; i < TableData[0].Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
                 {
-                    htm.Append("<tr> ");
+                    htmlDocument.Append("<tr> ");
                     for (int j = 0; j < TableData.Count; j++)
                     {
-                        htm.Append("<td");
-                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
-                        if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htm.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
-                        htm.Append(">");
-                        htm.Append(TableData[j][i]);
-                        htm.Append("</td>");
+                        htmlDocument.Append("<td");
+                        if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htmlDocument.Append(" align=\"" + ColAlignments[j] + "\"");
+                        if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htmlDocument.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
+                        htmlDocument.Append(">");
+                        htmlDocument.Append(TableData[j][i]);
+                        htmlDocument.Append("</td>");
                     }
-                    htm.AppendLine(" </tr>");
+                    htmlDocument.AppendLine(" </tr>");
                 }
             }
-            htm.AppendLine("</table>");
-            if (CenterFlag) htm.Append("</center>");
+            htmlDocument.AppendLine("</table>");
+            if (CenterFlag) htmlDocument.Append("</center>");
         }
 
         /// <summary>
@@ -411,8 +410,8 @@ namespace LibSrd
         {
             if (Main == null || Main.Rows.Count == 0) return;
 
-            if (CenterFlag) htm.Append("<center>");
-            htm.Append("<table" + GetClass(Class)); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+            if (CenterFlag) htmlDocument.Append("<center>");
+            htmlDocument.Append("<table" + GetClass(Class)); if (BorderFlag) htmlDocument.Append(" border=\"1\""); htmlDocument.AppendLine(">");   // <table border="1">
 
             //int Ncols = TableData[0].Length;   // TableData[0] is first row in RowsOfColumns mode
             //if (!RowsOfColumnsFlag) Ncols = TableData.Length;
@@ -441,38 +440,38 @@ namespace LibSrd
             }
 
             //ColHeaders: <tr> <th align="left">Extension</th>  <th align="left">Format</th> </tr>
-            htm.Append("<tr> ");
+            htmlDocument.Append("<tr> ");
             for (int j = 0; j < Main.Columns.Count; j++)
             {
-                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
-                htm.Append("<th align=\"center\">" + Main.Columns[j].ColumnName + "</th>");  // hard-wire header alignment to centered
+                //  htmlDocument.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htmlDocument.Append("<th align=\"center\">" + Main.Columns[j].ColumnName + "</th>");  // hard-wire header alignment to centered
             }
-            htm.AppendLine(" </tr>");
+            htmlDocument.AppendLine(" </tr>");
 
 
             // fill in the table
             for (int i = 0; i < Main.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
             {
-                htm.Append("<tr> ");
+                htmlDocument.Append("<tr> ");
                 for (int j = 0; j < Main.Columns.Count; j++)
                 {
-                    htm.Append("<td");
-                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
-                    if (ColorData != null && ColorData.Rows[i][j] != DBNull.Value && (string)ColorData.Rows[i][j] != "") htm.Append(" bgcolor=\"" + (string)ColorData.Rows[i][j] + "\"");
-                    htm.Append(">");
+                    htmlDocument.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htmlDocument.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData.Rows[i][j] != DBNull.Value && (string)ColorData.Rows[i][j] != "") htmlDocument.Append(" bgcolor=\"" + (string)ColorData.Rows[i][j] + "\"");
+                    htmlDocument.Append(">");
                     if (Main.Rows[i][j] != DBNull.Value && Main.Columns[j].DataType == typeof(double))
-                        htm.Append(((double)Main.Rows[i][j]).ToString(defaultFormat));
+                        htmlDocument.Append(((double)Main.Rows[i][j]).ToString(defaultFormat));
                     else if (Main.Rows[i][j] != DBNull.Value && Main.Columns[j].DataType == typeof(float))
-                        htm.Append(((float)Main.Rows[i][j]).ToString(defaultFormat));
+                        htmlDocument.Append(((float)Main.Rows[i][j]).ToString(defaultFormat));
                     else
-                        htm.Append(Main.Rows[i][j]);
-                    htm.Append("</td>");
+                        htmlDocument.Append(Main.Rows[i][j]);
+                    htmlDocument.Append("</td>");
                 }
-                htm.AppendLine(" </tr>");
+                htmlDocument.AppendLine(" </tr>");
             }
 
-            htm.AppendLine("</table>");
-            if (CenterFlag) htm.Append("</center>");
+            htmlDocument.AppendLine("</table>");
+            if (CenterFlag) htmlDocument.Append("</center>");
         }
 
         /// <summary>
@@ -488,8 +487,8 @@ namespace LibSrd
         {
             if (dataTable == null || dataTable.Columns.Count == 0) return;
 
-            if (CenterFlag) htm.Append("<center>");
-            htm.Append("<table" + GetClass(Class)); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+            if (CenterFlag) htmlDocument.Append("<center>");
+            htmlDocument.Append("<table" + GetClass(Class)); if (BorderFlag) htmlDocument.Append(" border=\"1\""); htmlDocument.AppendLine(">");   // <table border="1">
 
             int Ncols = dataTable.Columns.Count;
 
@@ -506,24 +505,24 @@ namespace LibSrd
             }
 
 
-            htm.Append("<tr> ");
+            htmlDocument.Append("<tr> ");
             for (int j = 0; j < Ncols; j++)
             {
-                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
-                htm.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
+                //  htmlDocument.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htmlDocument.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
             }
-            htm.AppendLine(" </tr>");
+            htmlDocument.AppendLine(" </tr>");
 
             for (int i = 0; i < dataTable.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
             {
-                htm.Append("<tr> ");
+                htmlDocument.Append("<tr> ");
                 for (int j = 0; j < dataTable.Columns.Count; j++)
                 {
-                    htm.Append("<td");
-                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
-                    if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htm.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
-                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
-                    htm.Append(">");
+                    htmlDocument.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htmlDocument.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData[j] != null && ColorData[j][i] != null && ColorData[j][i] != "") htmlDocument.Append(" bgcolor=\"" + ColorData[j][i] + "\"");
+                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htmlDocument.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                    htmlDocument.Append(">");
 
                     object element = dataTable.Rows[i][j];
                     Type typ = dataTable.Columns[j].DataType;
@@ -598,13 +597,13 @@ namespace LibSrd
                     {
                         str = "";
                     }
-                    htm.Append(str + "</td>");
+                    htmlDocument.Append(str + "</td>");
                 }
-                htm.AppendLine(" </tr>");
+                htmlDocument.AppendLine(" </tr>");
             }
 
-            htm.AppendLine("</table>");
-            if (CenterFlag) htm.Append("</center>");
+            htmlDocument.AppendLine("</table>");
+            if (CenterFlag) htmlDocument.Append("</center>");
         }
 
         /// <summary>
@@ -632,8 +631,8 @@ namespace LibSrd
         {
             if (dataTable == null || dataTable.Columns.Count == 0) return;
 
-            if (CenterFlag) htm.Append("<center>");
-            htm.Append("<table" + GetClass(Class)); if (BorderFlag) htm.Append(" border=\"1\""); htm.AppendLine(">");   // <table border="1">
+            if (CenterFlag) htmlDocument.Append("<center>");
+            htmlDocument.Append("<table" + GetClass(Class)); if (BorderFlag) htmlDocument.Append(" border=\"1\""); htmlDocument.AppendLine(">");   // <table border="1">
 
             int Ncols = dataTable.Columns.Count;
 
@@ -669,25 +668,25 @@ namespace LibSrd
             }
 
 
-            htm.Append("<tr> ");
+            htmlDocument.Append("<tr> ");
             for (int j = 0; j < Ncols; j++)
             {
-                //  htm.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
-                htm.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
+                //  htmlDocument.Append("<th align=\""+ColAlignments[j]+"\">"+ColHeaders[j]+"</th>");
+                htmlDocument.Append("<th align=\"center\">" + dataTable.Columns[j].ToString() + "</th>");  // hard-wire header alignment to centered
             }
-            htm.AppendLine(" </tr>");
+            htmlDocument.AppendLine(" </tr>");
 
             for (int i = 0; i < dataTable.Rows.Count; i++)    //  <tr> <td>No ext.</td>      <td>RFMD assembly format</td> </tr>
             {
-                htm.Append("<tr> ");
+                htmlDocument.Append("<tr> ");
                 for (int j = 0; j < dataTable.Columns.Count; j++)
                 {
                     string colnam = dataTable.Columns[j].ColumnName;
-                    htm.Append("<td");
-                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htm.Append(" align=\"" + ColAlignments[j] + "\"");
-                    if (ColorData != null && ColorData.Columns.Contains(colnam) && ColorData.Rows[i][colnam] != DBNull.Value && (string)ColorData.Rows[i][colnam] != "") htm.Append(" bgcolor=\"" + (string)ColorData.Rows[i][colnam] + "\"");
-                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htm.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
-                    htm.Append(">");
+                    htmlDocument.Append("<td");
+                    if (ColAlignments != null && ColAlignments[j] != null && ColAlignments[j] != null && ColAlignments[j] != "") htmlDocument.Append(" align=\"" + ColAlignments[j] + "\"");
+                    if (ColorData != null && ColorData.Columns.Contains(colnam) && ColorData.Rows[i][colnam] != DBNull.Value && (string)ColorData.Rows[i][colnam] != "") htmlDocument.Append(" bgcolor=\"" + (string)ColorData.Rows[i][colnam] + "\"");
+                    //     if (ColorData != null && ColorData[i] != null && ColorData[i][j] != null && ColorData[i][j] != null && ColorData[i][j] != "") htmlDocument.Append(" bgcolor=\"" + ColorData[i][j] + "\"");
+                    htmlDocument.Append(">");
 
                     object element = dataTable.Rows[i][j];
                     Type typ = dataTable.Columns[j].DataType;
@@ -771,13 +770,13 @@ namespace LibSrd
                     {
                         str = "";
                     }
-                    htm.Append(str + "</td>");
+                    htmlDocument.Append(str + "</td>");
                 }
-                htm.AppendLine(" </tr>");
+                htmlDocument.AppendLine(" </tr>");
             }
 
-            htm.AppendLine("</table>");
-            if (CenterFlag) htm.Append("</center>");
+            htmlDocument.AppendLine("</table>");
+            if (CenterFlag) htmlDocument.Append("</center>");
         }
 
         /// <summary>
@@ -926,9 +925,9 @@ namespace LibSrd
             <h2>Norwegian Mountain Trip</h2>
             <img border="0" src="/images/pulpit.jpg" alt="Pulpit rock" width="304" height="228"> */
 
-            htm.AppendLine("<img" + GetClass(Class) + " border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
+            htmlDocument.AppendLine("<img" + GetClass(Class) + " border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
                 "\" height=\"" + height.ToString() + "\">");
-            htm.AppendLine("<br>" + Caption + "</br>");
+            htmlDocument.AppendLine("<br>" + Caption + "</br>");
 
             return OK;
         }
@@ -951,9 +950,9 @@ namespace LibSrd
             <h2>Norwegian Mountain Trip</h2>
             <img border="0" src="/images/pulpit.jpg" alt="Pulpit rock" width="304" height="228"> */
 
-            htm.AppendLine("<img" + GetClass(Class) + " border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
+            htmlDocument.AppendLine("<img" + GetClass(Class) + " border=\"" + borderWid.ToString() + "\" src=\"" + filepath + "\" alt=\"" + Caption + "\" width=\"" + width.ToString() +
                 "\">");
-            htm.AppendLine("<br>" + Caption + "</br>");
+            htmlDocument.AppendLine("<br>" + Caption + "</br>");
 
             return OK;
         }
@@ -967,11 +966,11 @@ namespace LibSrd
         public void Div(StringBuilder contents, string Class=null)
         {
             if (contents == null)
-                htm.Append("<div" + GetClass(Class) + ">" + "</div>");
+                htmlDocument.Append("<div" + GetClass(Class) + ">" + "</div>");
             else if (contents.ToString().ToLower().Contains("<div") && contents.ToString().ToLower().Contains("</div>"))
-                htm.Append(contents);
+                htmlDocument.Append(contents);
             else
-                htm.Append("<div" + GetClass(Class) + ">" + contents.ToString() + "</div>");
+                htmlDocument.Append("<div" + GetClass(Class) + ">" + contents.ToString() + "</div>");
         }
         #endregion
 
@@ -1116,7 +1115,7 @@ namespace LibSrd
             {
                 if (pair != null && pair.Length > 1)
                 {
-                    htm.Replace(pair[0], pair[1]);
+                    htmlDocument.Replace(pair[0], pair[1]);
                 }
             }
         }
@@ -1193,9 +1192,9 @@ namespace LibSrd
         public void Preformatted(string text)
         {
             if (text == null) return;
-            htm.AppendLine("<pre>");
-            htm.AppendLine(text);
-            htm.AppendLine("</pre>");
+            htmlDocument.AppendLine("<pre>");
+            htmlDocument.AppendLine(text);
+            htmlDocument.AppendLine("</pre>");
         }
         #endregion utilities
 
@@ -1207,17 +1206,17 @@ namespace LibSrd
         public void Script(StringBuilder script)
         {
             if (script.ToString().ToLower().Contains("<script>") && script.ToString().ToLower().Contains("</script>"))
-                htm.Append(script);
+                htmlDocument.Append(script);
             else
-                htm.Append("<script>" + script.ToString() + "</script>");
+                htmlDocument.Append("<script>" + script.ToString() + "</script>");
         }
 
         public void Script(string script)
         {
             if (script.ToLower().Contains("<script>") && script.ToLower().Contains("</script>"))
-                htm.Append(script);
+                htmlDocument.Append(script);
             else
-                htm.Append("<script>" + script + "</script>");
+                htmlDocument.Append("<script>" + script + "</script>");
         }
 
         /// <summary>
@@ -1227,17 +1226,17 @@ namespace LibSrd
         public void Style(StringBuilder style)
         {
             if (style.ToString().ToLower().Contains("<style>") && style.ToString().ToLower().Contains("</style>"))
-                htm.Append(style);
+                htmlDocument.Append(style);
             else
-                htm.Append("<style>" + style.ToString() + "</style>");
+                htmlDocument.Append("<style>" + style.ToString() + "</style>");
         }
 
         public void Style(string style)
         {
             if (style.ToLower().Contains("<style>") && style.ToLower().Contains("</style>"))
-                htm.Append(style);
+                htmlDocument.Append(style);
             else
-                htm.Append("<style>" + style + "</style>");
+                htmlDocument.Append("<style>" + style + "</style>");
         }
 
         /// <summary>

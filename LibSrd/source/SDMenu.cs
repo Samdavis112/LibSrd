@@ -138,8 +138,7 @@ namespace LibSrd
         /// </summary>
         private string calculateTop()
         {
-            string top = string.Empty;
-            top += "+";
+            string top = "+";
 
             for (int i = 0; i < MenuLength; i++)
                 top = top + "-";

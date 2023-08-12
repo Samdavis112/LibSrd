@@ -61,7 +61,7 @@ namespace LibSrd
             string folder = Path.GetDirectoryName(Filepath);
             if (!Directory.Exists(folder))
             {
-                return "Error in MySettings2.Save - cannot access folder: '" + folder + "'";
+                return "Error in Settings.Save - cannot access folder: '" + folder + "'";
             }
 
             if (Backup)

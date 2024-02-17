@@ -6,7 +6,7 @@ using System.Text;
 
 namespace LibSrd
 {
-    class HtmlBuilder
+    public class HtmlBuilder
     {
         private StringBuilder htmlDocument = new StringBuilder();
 

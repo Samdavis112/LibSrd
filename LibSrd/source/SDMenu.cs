@@ -1,5 +1,24 @@
-﻿using System;
+﻿using LibSrd;
+using System;
 
+//##############################  EXAMPLE CODE ##############################
+//public static void Main(string[] args)
+//{
+//    Option[] options =
+//    {
+//                new Option("Option 1, Say Hello", SayHello),
+//                new Option("Option 4, Quit")
+//            };
+//    SDMenu m = new SDMenu(options, "Example Menu");
+//    m.Activate();
+//}
+
+//public static void SayHello()
+//{
+//    Console.WriteLine("Hello World!");
+//    Console.ReadLine();
+//}
+//###########################################################################
 namespace LibSrd
 {
     public class Option
@@ -7,22 +26,24 @@ namespace LibSrd
         public string Text;
         public static int position = -1;
         public Action Method;
+        public ConsoleColor Color;
 
         /// <summary>
         /// A menu item for SDMenu.
         /// </summary>
         /// <param name="text">How you the option will appear on the menu.</param>
         /// <param name="method">The action you would like the option to perform upon click.</param>
-        public Option(string text, Action method = null)
+        public Option(string text, Action method = null, System.ConsoleColor color = ConsoleColor.White)
         {
             Text = text;
             if (method != null)
                 Method = method;
             position++;
+            Color = color;
         }
     }
 
-    public class Menu
+    public class SDMenu
     {
         //Public so the menu can be edited after decleration.
         public Option[] Options;
@@ -35,7 +56,7 @@ namespace LibSrd
         /// </summary>
         /// <param name="options">A list of Options</param>
         /// <param name="menuName">The name of the menu that will be displayed.</param>
-        public Menu(Option[] options, string menuName = null)
+        public SDMenu(Option[] options, string menuName = null)
         {
             MenuName = menuName;
             Options = options;
@@ -111,7 +132,9 @@ namespace LibSrd
                 else //Normal option
                 {
                     Console.Write("|  ");
+                    Console.ForegroundColor = Options[i].Color;
                     Console.Write(Options[i].Text);
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.SetCursorPosition(MenuLength, i + 3);
                 Console.WriteLine(" |");

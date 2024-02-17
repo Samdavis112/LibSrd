@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{2FC38D6B-96D6-4AF1-8D3E-F057B636E114}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibSrd_NETCore", "..\LibSrd_NETCore\LibSrd_NETCore\LibSrd_NETCore.csproj", "{BD8147D7-58C8-4CB8-9A97-23044C647780}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibSrd_NetCore", "LibSrd_NetCore\LibSrd_NetCore.csproj", "{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,10 +30,10 @@ Global
 		{2FC38D6B-96D6-4AF1-8D3E-F057B636E114}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FC38D6B-96D6-4AF1-8D3E-F057B636E114}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FC38D6B-96D6-4AF1-8D3E-F057B636E114}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD8147D7-58C8-4CB8-9A97-23044C647780}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD8147D7-58C8-4CB8-9A97-23044C647780}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD8147D7-58C8-4CB8-9A97-23044C647780}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD8147D7-58C8-4CB8-9A97-23044C647780}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

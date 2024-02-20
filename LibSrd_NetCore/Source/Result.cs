@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LibSrd_NETCore
+﻿namespace LibSrd_NETCore
 {
     /// <summary>
     /// The result class combines a value result (of any type) with a success indication and and error message.

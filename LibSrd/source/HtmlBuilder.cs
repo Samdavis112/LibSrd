@@ -17,7 +17,7 @@ namespace LibSrd
         /// <param name="useDefaultStyles">Should the default styles be used?</param>
         /// <param name="StyleFilepath">path of CSS file</param>
         /// <param name="DefaultImageRoot">Base path of default images in the document</param>
-        public HtmlBuilder(string Title, bool useDefaultStyles=true, string StyleFilepath = null, string DefaultImageRoot = null)
+        public HtmlBuilder(string Title, bool useDefaultStyles = true, string StyleFilepath = null, string DefaultImageRoot = null)
         {
             htmlDocument.AppendLine("<html>");
             htmlDocument.AppendLine("<head>");
@@ -111,12 +111,12 @@ namespace LibSrd
         #endregion
 
         #region Paragraphs/Breaks/Headings
-        public void Heading(string heading, int level, string Class=null)
+        public void Heading(string heading, int level, string Class = null)
         {
             Heading(heading, level, null, Class);
         }
 
-        public void Heading(string heading, int level, string label, string Class=null)
+        public void Heading(string heading, int level, string label, string Class = null)
         {
             string lvl = level.ToString();
             if (label == null || label.Length == 0)
@@ -125,12 +125,12 @@ namespace LibSrd
                 htmlDocument.AppendLine("<h" + lvl + GetClass(Class) + "><a id=\"" + label + "\">" + heading + "</a></h" + lvl + ">");
         }
 
-        public void Para(string text, string Class=null)
+        public void Para(string text, string Class = null)
         {
             htmlDocument.AppendLine("<p" + GetClass(Class) + ">" + text + "</p>");
         }
 
-        public void Para(StringBuilder text, string Class=null)
+        public void Para(StringBuilder text, string Class = null)
         {
             htmlDocument.AppendLine("<p" + GetClass(Class) + ">" + text.ToString() + "</p>");
         }
@@ -145,7 +145,7 @@ namespace LibSrd
             htmlDocument.AppendLine("<br>");
         }
 
-        public void ContactInfo(IEnumerable<string> Lines, string Class=null)
+        public void ContactInfo(IEnumerable<string> Lines, string Class = null)
         {
             /* <address>
                     Written by W3Schools.com<br>
@@ -161,7 +161,7 @@ namespace LibSrd
             htmlDocument.AppendLine("</address>");
         }
 
-        public void ContactInfo(string Author, string Email, string Class=null)
+        public void ContactInfo(string Author, string Email, string Class = null)
         {
             /* <address>
                     Written by W3Schools.com<br>
@@ -236,10 +236,10 @@ namespace LibSrd
             htmlDocument.AppendLine(listObj.GenerateHtml());
         }
 
-        public void ListPlain(IEnumerable<string> items, string Class=null)
+        public void ListPlain(IEnumerable<string> items, string Class = null)
         {
             if (items == null) return;
-            htmlDocument.AppendLine("<para" + GetClass(Class) +">");
+            htmlDocument.AppendLine("<para" + GetClass(Class) + ">");
             foreach (string item in items)
             {
                 htmlDocument.AppendLine(item + "<br/>");
@@ -247,7 +247,7 @@ namespace LibSrd
             htmlDocument.AppendLine("</para>");
         }
 
-        public void ListBullet(IEnumerable<string> items, string Class=null)
+        public void ListBullet(IEnumerable<string> items, string Class = null)
         {
             if (items == null) return;
             htmlDocument.AppendLine("<ul" + GetClass(Class) + ">");
@@ -258,7 +258,7 @@ namespace LibSrd
             htmlDocument.AppendLine("</ul>");
         }
 
-        public void ListNumbered(IEnumerable<string> items, string Class=null)
+        public void ListNumbered(IEnumerable<string> items, string Class = null)
         {
             if (items == null) return;
             htmlDocument.AppendLine("<ol" + GetClass(Class) + ">");
@@ -274,10 +274,10 @@ namespace LibSrd
         /// </summary>
         /// <param name="Items1">First level List items</param>
         /// <param name="Items2">2nd level list item</param>
-        public void ListNumbered(string[] Items1, string[][] Items2, string Class=null)   // NEEDS VERIFYING
+        public void ListNumbered(string[] Items1, string[][] Items2, string Class = null)   // NEEDS VERIFYING
         {
             if (Items1 == null) return;
-            htmlDocument.AppendLine("<ol" + GetClass(Class) +">");
+            htmlDocument.AppendLine("<ol" + GetClass(Class) + ">");
             for (int i = 0; i < Items1.Length; i++)
             {
                 htmlDocument.AppendLine("<li>" + Items1[i] + "</li>");
@@ -304,7 +304,7 @@ namespace LibSrd
         /// <param name="ColAlignments"></param>
         /// <param name="TableData"></param>
         /// <param name="BorderFlag"></param>
-        public void Table(string[] ColHeaders, string[] ColAlignments, string[,] TableData, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(string[] ColHeaders, string[] ColAlignments, string[,] TableData, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             string[][] tab = new string[TableData.GetLength(0)][];
             for (int i = 0; i < TableData.GetLength(0); i++)
@@ -318,13 +318,13 @@ namespace LibSrd
             Table(ColHeaders, ColAlignments, tab, null, true, BorderFlag, CenterFlag, Class);
         }
 
-        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             IList<IList<string>> ColorData = null;
             Table(ColHeaders, ColAlignments, TableData, ColorData, RowsOfColumnsFlag, BorderFlag, CenterFlag, Class);
         }
 
-        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, IList<IList<string>> ColorData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(IList<string> ColHeaders, IList<string> ColAlignments, IList<IList<string>> TableData, IList<IList<string>> ColorData, bool RowsOfColumnsFlag, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             if (TableData == null || TableData.Count == 0) return;
 
@@ -406,7 +406,7 @@ namespace LibSrd
         /// <param name="BorderFlag"></param>
         /// <param name="CenterFlag"></param>
         /// <param name="defaultFormat">The string format to use in tables if values are real</param>
-        public void Table(DataTable Main, IList<string> ColAlignments, DataTable ColorData, bool BorderFlag, bool CenterFlag, string defaultFormat = "0.###", string Class=null)
+        public void Table(DataTable Main, IList<string> ColAlignments, DataTable ColorData, bool BorderFlag, bool CenterFlag, string defaultFormat = "0.###", string Class = null)
         {
             if (Main == null || Main.Rows.Count == 0) return;
 
@@ -483,7 +483,7 @@ namespace LibSrd
         /// <param name="ColorData">string[j][i] ColorData</param>
         /// <param name="BorderFlag"></param>
         /// <param name="CenterFlag"></param>
-        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, IList<IList<string>> ColorData, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, IList<IList<string>> ColorData, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             if (dataTable == null || dataTable.Columns.Count == 0) return;
 
@@ -614,20 +614,20 @@ namespace LibSrd
         /// <param name="ColAlignments"></param>
         /// <param name="BorderFlag"></param>
         /// <param name="CenterFlag"></param>
-        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(DataTable dataTable, IList<string> Format, IList<string> ColAlignments, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             Table(dataTable, Format, ColAlignments, null, BorderFlag, CenterFlag, Class);
         }
 
         // this is to be the main datatable series
-        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             Table(dataTable, FormatDict, ColAlignDict, null, BorderFlag, CenterFlag, Class);
 
         }
 
         // this is to be the main datatable series
-        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, DataTable ColorData, bool BorderFlag, bool CenterFlag, string Class=null)
+        public void Table(DataTable dataTable, Dictionary<string, string> FormatDict, Dictionary<string, string> ColAlignDict, DataTable ColorData, bool BorderFlag, bool CenterFlag, string Class = null)
         {
             if (dataTable == null || dataTable.Columns.Count == 0) return;
 
@@ -915,7 +915,7 @@ namespace LibSrd
         /// <param name="Caption"></param>
         /// <param name="border"></param>
         /// <returns></returns>
-        public bool Image(string filepath, int width, int height, string Caption, bool border, string Class=null)
+        public bool Image(string filepath, int width, int height, string Caption, bool border, string Class = null)
         {
             int borderWid = 0; if (border) borderWid = 1;
 
@@ -940,7 +940,7 @@ namespace LibSrd
         /// <param name="Caption"></param>
         /// <param name="border"></param>
         /// <returns></returns>
-        public bool Image(string filepath, int width, string Caption, bool border, string Class=null)
+        public bool Image(string filepath, int width, string Caption, bool border, string Class = null)
         {
             int borderWid = 0; if (border) borderWid = 1;
 
@@ -963,7 +963,7 @@ namespace LibSrd
         /// Create your very own div! Right here!
         /// </summary>
         /// <param name="contents"></param>
-        public void Div(StringBuilder contents, string Class=null)
+        public void Div(StringBuilder contents, string Class = null)
         {
             if (contents == null)
                 htmlDocument.Append("<div" + GetClass(Class) + ">" + "</div>");

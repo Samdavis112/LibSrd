@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 // settings management class. Will need to copy actual class, as the code needs modifying for each program this is used with. (If not using normal Application settings such as for click once.)
 namespace LibSrd_NETCore
 {

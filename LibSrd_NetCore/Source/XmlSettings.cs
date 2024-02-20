@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Xml.Serialization;
 
 // settings management class. Will need to copy actual class, as the code needs modifying for each program this is used with. (If not using normal Application settings such as for click once.)

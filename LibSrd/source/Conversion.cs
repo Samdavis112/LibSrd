@@ -1,13 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using System.Windows;
 
 namespace LibSrd
 {
@@ -273,7 +269,7 @@ namespace LibSrd
             }
 
             try
-            { 
+            {
                 DataSet ds = new DataSet();
                 ds.ReadXml(Filepath);
 
@@ -301,13 +297,13 @@ namespace LibSrd
             {
                 ds.WriteXml(Filepath);
             }
-            catch(Exception ex) { ErrMsg = ex.Message; }
+            catch (Exception ex) { ErrMsg = ex.Message; }
         }
         #endregion
 
         #region Json
         public static object JsonToObject(string Json, Type type)
-        { 
+        {
             return JsonConvert.DeserializeObject(Json, type);
         }
         public static string ToJson(this object obj)

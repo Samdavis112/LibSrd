@@ -1,5 +1,4 @@
-﻿using LibSrd;
-using System;
+﻿using System;
 
 //##############################  EXAMPLE CODE ##############################
 //public static void Main(string[] args)
@@ -33,7 +32,8 @@ namespace LibSrd
         /// </summary>
         /// <param name="text">How you the option will appear on the menu.</param>
         /// <param name="method">The action you would like the option to perform upon click.</param>
-        public Option(string text, Action method = null, System.ConsoleColor color = ConsoleColor.White)
+        /// /// <param name="color">An optional parameter where you can change the colour of the text displayed on the screen</param>
+        public Option(string text, Action method = null, ConsoleColor color = ConsoleColor.White)
         {
             Text = text;
             if (method != null)
@@ -164,9 +164,9 @@ namespace LibSrd
             string top = "+";
 
             for (int i = 0; i < MenuLength; i++)
-                top = top + "-";
+                top += "-";
 
-            return (top + "+");
+            return top + "+";
         }
     }
 }

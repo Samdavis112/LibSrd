@@ -1,6 +1,4 @@
-﻿using System;
-
-//##############################  EXAMPLE CODE ##############################
+﻿//##############################  EXAMPLE CODE ##############################
 //public static void Main(string[] args)
 //{
 //    Option[] options =
@@ -25,18 +23,21 @@ namespace LibSrd_NETCore
         public string Text;
         public static int position = -1;
         public Action Method;
+        public ConsoleColor Color;
 
         /// <summary>
         /// A menu item for SDMenu.
         /// </summary>
         /// <param name="text">How you the option will appear on the menu.</param>
         /// <param name="method">The action you would like the option to perform upon click.</param>
-        public Option(string text, Action method = null)
+        /// <param name="color">An optional parameter where you can change the colour of the text displayed on the screen</param>
+        public Option(string text, Action method = null, ConsoleColor color = ConsoleColor.White)
         {
             Text = text;
             if (method != null)
                 Method = method;
             position++;
+            Color = color;
         }
     }
 
@@ -129,7 +130,9 @@ namespace LibSrd_NETCore
                 else //Normal option
                 {
                     Console.Write("|  ");
+                    Console.ForegroundColor = Options[i].Color;
                     Console.Write(Options[i].Text);
+                    Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.SetCursorPosition(MenuLength, i + 3);
                 Console.WriteLine(" |");
@@ -159,9 +162,9 @@ namespace LibSrd_NETCore
             string top = "+";
 
             for (int i = 0; i < MenuLength; i++)
-                top = top + "-";
+                top += "-";
 
-            return (top + "+");
+            return top + "+";
         }
     }
 }

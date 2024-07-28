@@ -6,7 +6,7 @@ by Sam Davis - with lots of inspiration from my Dad.
 |Class|Description|Implemented in .NET Framework 4.8|Implemented in .NET 8|
 |---|---|---|---|
 |Conversion| Has CSV, XML, JSON and DataTable conversion methods.|✔️|✔️|
-|EmailObj| A class that will create an EmailObj object, that can email from the given Gmail address. You must use an app password.|✔️|✔️|
+|EmailObj| A class that will create an EmailObj object, that can email from the given Gmail address. You must use an app password.|✔️|❌|
 |HtmlBuilder| Will write a HTML document that can have tables, lists, images etc...|✔️|✔️|
 |JsonSettings| A very useful class that will serialise settings in it into an json file.|✔️|✔️|
 |Result| A class used to have nice results for external api's and such.|✔️|✔️|

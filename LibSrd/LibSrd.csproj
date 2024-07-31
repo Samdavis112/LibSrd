@@ -39,6 +39,7 @@
     <Reference Include="ReachFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Printing" />
     <Reference Include="System.Xml.Linq" />
@@ -54,6 +55,7 @@
     <Compile Include="source\EmailObj.cs" />
     <Compile Include="source\HtmlBuilder.cs" />
     <Compile Include="source\JsonSettings.cs" />
+    <Compile Include="source\Steganography.cs" />
     <Compile Include="source\XmlSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecretVariables.Designer.cs">

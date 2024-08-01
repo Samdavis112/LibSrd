@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /LibSrd/SecretVariables.resx
 /Tester/Tester.csproj
 /Tester
+/UsedEmojis.txt
+/LibSrd_NetCore/SecretVariables.resx

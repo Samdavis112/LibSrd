@@ -1,4 +1,4 @@
-## LibSrd - v1.0.0
+## LibSrd - v1.0.1
 .NET Framework 4.8, and .NET 8 C# class libraries containing various methods, functions and classes I use often.  
 by Sam Davis - with lots of inspiration from my Dad.
 

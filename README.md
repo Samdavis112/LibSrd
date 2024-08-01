@@ -1,12 +1,12 @@
 ## LibSrd - v1.0.0
-.NET Framework 4.8, and .NET 8 C# class libraries containing various methods and functions I use often, that having here avoids constant re-writing.
-by Sam Davis - with lots of inspiration from my Dad. 
+.NET Framework 4.8, and .NET 8 C# class libraries containing various methods, functions and classes I use often.  
+by Sam Davis - with lots of inspiration from my Dad.
 
 ### Contents
 |Class|Description|Implemented in .NET Framework 4.8|Implemented in .NET 8|
 |---|---|---|---|
 |Conversion| Has CSV, XML, JSON and DataTable conversion methods.|✔️|✔️|
-|EmailObj| A class that will create an EmailObj object, that can email from the given Gmail address. You must use an app password.|✔️|❌|
+|EmailObj| A class that will create an EmailObj object, that can email from the given Gmail address. You must use an app password.|✔️|✔️|
 |HtmlBuilder| Will write a HTML document that can have tables, lists, images etc...|✔️|✔️|
 |JsonSettings| A very useful class that will serialise settings in it into an json file.|✔️|✔️|
 |Result| A class used to have nice results for external api's and such.|✔️|✔️|

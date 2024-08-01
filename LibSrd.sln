@@ -3,16 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibSrd", "LibSrd\LibSrd.csproj", "{FBFB91ED-18D9-4891-BDF7-282F59B056F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibSrd-4.8", "LibSrd\LibSrd-4.8.csproj", "{FBFB91ED-18D9-4891-BDF7-282F59B056F6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5216B6B-F631-43BF-AF5A-6011050B0CB1}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		README.md = README.md
+		UsedEmojis.txt = UsedEmojis.txt
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibSrd_NETCore", "LibSrd_NetCore\LibSrd_NETCore.csproj", "{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibSrd-8", "LibSrd_NetCore\LibSrd-8.csproj", "{7C175BD1-5FEF-4C73-BC69-67D171BAD7B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csproj", "{1AA2F163-E00D-4F66-9510-603B9A81FC62}"
 EndProject
